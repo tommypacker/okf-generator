@@ -4,58 +4,76 @@ title: okfgen
 description: Generate Open Knowledge Format bundles for software repositories.
 resource: .
 tags: [package]
-timestamp: 2026-06-13T19:53:05.066Z
+timestamp: 2026-06-13T19:56:53.456Z
 ---
 
 # Summary
 
-The `okfgen` package generates Open Knowledge Format (OKF) bundles for software repositories, focusing on scanning and documenting repository structures and workflows.
+okfgen is a CLI tool that generates Open Knowledge Format (OKF) bundles for software repositories by scanning source files, manifests, docs, and CI workflows, with optional LLM enrichment.
 
 # Responsibilities
 
-* Generate OKF bundles from repository files.
+* Scan repository structure and detect packages, scripts, docs, configs, and CI files
+* Generate OKF markdown bundles with repository, architecture, package, workflow, and interface concepts
+* Provide CLI commands: init, generate, diff, explain, validate
+* Support LLM-based enrichment for richer summaries (quick/explore modes)
+* Validate generated OKF bundles for correctness
 
 # Implementation Notes
 
-* The `src/cli.ts` file implements a command-line interface (CLI) that allows users to initialize, generate, diff, explain, and validate OKF bundles.
-* The `src/scanner.ts` file scans the repository for relevant files, including package manifests, documentation, and CI workflows, to gather information for the OKF generation.
-* The `src/diff.ts` file compares existing OKF bundles with newly generated ones, identifying added, removed, or changed files.
-* The `src/enrichment.ts` file provides functionality to enrich the generated OKF bundles using LLM (Large Language Model) capabilities, allowing for more detailed summaries based on repository evidence.
-* The `src/okf.ts` file contains the logic for generating the actual OKF files based on the scanned repository data and any enrichment applied.
-* The `src/config.ts` file manages the loading and writing of configuration files that dictate how the OKF generation behaves.
-* The `src/validator.ts` file validates the generated OKF bundles to ensure they meet the expected format and structure.
+* src/cli.ts: Main CLI entry point parsing commands (init, generate, diff, explain, validate) and delegating to core functions.
+* src/scanner.ts: Scans repository files, detects packages, languages, docs, configs, and CI, returning a RepoInfo structure.
+* src/okf.ts: Generates OKF markdown files from RepoInfo and optional enrichment, creating concepts for repository, architecture, packages, workflows, and interfaces.
+* src/enrichment.ts: Handles LLM enrichment by collecting evidence, calling OpenAI-compatible API, and parsing responses into RepoEnrichment objects.
+* src/diff.ts: Compares generated OKF bundle with an existing one, reporting added/removed/changed files.
+* src/validator.ts: Validates OKF markdown files for required frontmatter and structure.
+* src/config.ts: Manages okfgen.config.json read/write and default configuration.
+* src/fs-utils.ts: Provides file system utilities: listFiles, readJson, writeFiles, ensureCleanDir.
 
 # Public Interfaces
 
-* The CLI commands such as `okfgen generate`, `okfgen diff`, and `okfgen validate` serve as the primary public interfaces for interacting with the package.
+* CLI binary okfgen with commands: init, generate, diff, explain, validate
+* Programmatic API exported from src/index.ts: writeDefaultConfig, compareDirectories, diffOkf, writeGeneratedBundle, enrichRepo, generateOkfFiles, scanRepo, validateOkf
 
 # Workflows
 
-* The package supports workflows for generating OKF bundles, validating them, and comparing them against existing bundles.
+* Build: tsc -p tsconfig.json
+* Dev: node --loader ts-node/esm src/cli.ts
+* Start: node dist/cli.js
+* Check: npm run build
 
 # Important Files
 
+* `package.json`
 * `src/cli.ts`
 * `src/scanner.ts`
-* `src/diff.ts`
-* `src/enrichment.ts`
 * `src/okf.ts`
-* `src/config.ts`
+* `src/enrichment.ts`
+* `src/diff.ts`
 * `src/validator.ts`
+* `src/config.ts`
+* `src/fs-utils.ts`
+* `src/types.ts`
 
 # Risks And Unknowns
 
-* The LLM enrichment feature requires an API key and may have limitations based on the model and configuration used.
+* LLM enrichment requires OKFGEN_LLM_API_KEY or OPENAI_API_KEY and may incur costs depending on usage.
+* Cache behavior for LLM responses is implementation-defined and may affect reproducibility.
+* Undocumented edge cases in package detection for non-standard monorepo layouts.
 
 # Evidence
 
+* `package.json`
 * `src/cli.ts`
 * `src/scanner.ts`
-* `src/diff.ts`
-* `src/enrichment.ts`
 * `src/okf.ts`
-* `src/config.ts`
+* `src/enrichment.ts`
+* `src/diff.ts`
 * `src/validator.ts`
+* `src/config.ts`
+* `src/fs-utils.ts`
+* `src/types.ts`
+* `README.md`
 
 # Manifest
 

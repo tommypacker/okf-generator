@@ -1,7 +1,7 @@
 {
   "tool": "okfgen",
   "toolVersion": "0.1.0",
-  "generatedAt": "2026-06-13T19:53:05.066Z",
+  "generatedAt": "2026-06-13T19:56:53.456Z",
   "repository": {
     "name": "okfgen",
     "root": "/Users/tommy/Documents/opensource/okf",
@@ -11,7 +11,7 @@
   "generation": {
     "mode": "explore",
     "provider": "openai-compatible",
-    "model": "gpt-4o-mini",
+    "model": "deepseek-v4-flash",
     "packageScope": "primary"
   },
   "counts": {
