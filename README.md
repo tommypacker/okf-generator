@@ -99,20 +99,29 @@ node dist/cli.js generate --repo . --out okf --reset --package-scope all
 
 By default, generation runs in `scan` mode, which is offline and deterministic. Use `--mode quick` or `--mode explore` to add richer summaries grounded in bounded repository evidence.
 
+The LLM adapter uses an OpenAI-compatible chat completions endpoint. OpenAI works with the default base URL:
+
 ```bash
 export OPENAI_API_KEY=...
-node dist/cli.js generate --repo /path/to/repo --out /path/to/repo/okf --update --mode quick
-```
-
-The LLM adapter uses an OpenAI-compatible chat completions endpoint. You can point it at OpenAI or another compatible provider:
-
-```bash
 node dist/cli.js generate \
   --repo /path/to/repo \
   --out /path/to/repo/okf \
   --update \
   --mode quick \
   --llm-model gpt-4o-mini
+```
+
+DeepSeek works by pointing the same adapter at DeepSeek's OpenAI-compatible endpoint:
+
+```bash
+export OKFGEN_LLM_API_KEY=...
+node dist/cli.js generate \
+  --repo /path/to/repo \
+  --out /path/to/repo/okf \
+  --update \
+  --mode explore \
+  --llm-base-url https://api.deepseek.com \
+  --llm-model deepseek-v4-flash
 ```
 
 Environment variables:
