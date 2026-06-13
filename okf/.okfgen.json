@@ -1,0 +1,44 @@
+{
+  "tool": "okfgen",
+  "toolVersion": "0.1.0",
+  "generatedAt": "2026-06-13T19:00:57.172Z",
+  "repository": {
+    "name": "okfgen",
+    "root": "/Users/tommy/Documents/opensource/okf",
+    "remoteUrl": "git@github.com:tommypacker/okf-generator.git",
+    "defaultBranch": "main"
+  },
+  "generation": {
+    "mode": "scan",
+    "packageScope": "primary"
+  },
+  "counts": {
+    "packages": 1,
+    "docs": 1,
+    "configs": 2,
+    "ci": 0,
+    "tests": 0,
+    "languages": 2
+  },
+  "files": [
+    "architecture/index.md",
+    "architecture/overview.md",
+    "docs/documentation.md",
+    "docs/index.md",
+    "index.md",
+    "interfaces/cli.md",
+    "interfaces/index.md",
+    "log.md",
+    "operations/ci.md",
+    "operations/configuration.md",
+    "operations/index.md",
+    "operations/test-suite.md",
+    "packages/index.md",
+    "packages/okfgen.md",
+    "repository.md",
+    "workflows/index.md",
+    "workflows/local-development.md",
+    "workflows/release.md",
+    "workflows/testing.md"
+  ]
+}
