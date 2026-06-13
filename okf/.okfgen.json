@@ -1,7 +1,7 @@
 {
   "tool": "okfgen",
   "toolVersion": "0.1.0",
-  "generatedAt": "2026-06-13T19:00:57.172Z",
+  "generatedAt": "2026-06-13T19:10:57.764Z",
   "repository": {
     "name": "okfgen",
     "root": "/Users/tommy/Documents/opensource/okf",
@@ -9,7 +9,9 @@
     "defaultBranch": "main"
   },
   "generation": {
-    "mode": "scan",
+    "mode": "explore",
+    "provider": "openai-compatible",
+    "model": "gpt-4o-mini",
     "packageScope": "primary"
   },
   "counts": {
@@ -29,16 +31,12 @@
     "interfaces/cli.md",
     "interfaces/index.md",
     "log.md",
-    "operations/ci.md",
     "operations/configuration.md",
     "operations/index.md",
-    "operations/test-suite.md",
     "packages/index.md",
     "packages/okfgen.md",
     "repository.md",
     "workflows/index.md",
-    "workflows/local-development.md",
-    "workflows/release.md",
-    "workflows/testing.md"
+    "workflows/local-development.md"
   ]
 }

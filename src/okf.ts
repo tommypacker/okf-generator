@@ -48,73 +48,134 @@ export function generateOkfFiles(repo: RepoInfo, enrichment?: RepoEnrichment): O
     })));
   }
 
-  files.push(file("workflows/index.md", workflowsIndex(repo)));
-  files.push(file("workflows/local-development.md", workflowConcept(
-    repo,
-    "Development Workflow",
-    "Local Development",
-    "Detected local development scripts and package manager hints.",
-    repo.scripts.filter((script) => scriptCategory(script) === "development"),
-    ["development"],
-    enrichment?.workflows?.development,
-  )));
-  files.push(file("workflows/testing.md", workflowConcept(
-    repo,
-    "Test Workflow",
-    "Testing",
-    "Detected test scripts and test files.",
-    repo.scripts.filter((script) => scriptCategory(script) === "test"),
-    ["testing"],
-    enrichment?.workflows?.testing,
-    testsBody(repo),
-  )));
-  files.push(file("workflows/release.md", workflowConcept(
-    repo,
-    "Release Workflow",
-    "Release",
-    "Detected release and publishing scripts, changelog, and CI hints.",
-    repo.scripts.filter((script) => scriptCategory(script) === "release"),
-    ["release"],
-    enrichment?.workflows?.release,
-    releaseBody(repo),
-  )));
+  const workflowFiles = workflowConceptFiles(repo, enrichment);
+  files.push(file("workflows/index.md", workflowsIndex(workflowFiles)));
+  for (const workflowFile of workflowFiles) {
+    files.push(workflowFile.file);
+  }
+
+  const operationFiles = operationConceptFiles(repo);
+  if (operationFiles.length) {
+    files.push(file("operations/index.md", sectionIndex("Operations", operationFiles.map((item) => item.entry))));
+    for (const operationFile of operationFiles) {
+      files.push(operationFile.file);
+    }
+  }
 
   files.push(file("docs/index.md", docsIndex(repo)));
   files.push(file("docs/documentation.md", docsConcept(repo, enrichment)));
 
-  files.push(file("operations/index.md", sectionIndex("Operations", [
-    ["Configuration", "configuration.md", "Detected configuration files."],
-    ["CI Workflows", "ci.md", "Detected continuous integration workflow files."],
-    ["Test Suite", "test-suite.md", "Detected test files and test commands."],
-  ])));
-  files.push(file("operations/configuration.md", listConcept(
-    repo,
-    "Configuration Inventory",
-    "Configuration Inventory",
-    "Detected repository configuration files.",
-    ["configuration"],
-    repo.configs,
-  )));
-  files.push(file("operations/ci.md", listConcept(
-    repo,
-    "CI Workflow",
-    "CI Workflows",
-    "Detected continuous integration workflow files.",
-    ["ci", "automation"],
-    repo.ci,
-  )));
-  files.push(file("operations/test-suite.md", listConcept(
-    repo,
-    "Test Suite",
-    "Test Suite",
-    "Detected test files in the repository.",
-    ["testing"],
-    repo.tests,
-  )));
-
   files.push(file("log.md", logFile(repo)));
 
   return files.sort((a, b) => a.path.localeCompare(b.path));
+}
+
+function workflowConceptFiles(repo: RepoInfo, enrichment?: RepoEnrichment): Array<{
+  entry: [string, string, string];
+  file: OkfFile;
+}> {
+  const developmentScripts = repo.scripts.filter((script) => scriptCategory(script) === "development");
+  const testScripts = repo.scripts.filter((script) => scriptCategory(script) === "test");
+  const releaseScripts = repo.scripts.filter((script) => scriptCategory(script) === "release");
+  const entries: Array<{ entry: [string, string, string]; file: OkfFile }> = [];
+
+  entries.push({
+    entry: ["Local Development", "local-development.md", "Detected local development scripts and package manager hints."],
+    file: file("workflows/local-development.md", workflowConcept(
+      repo,
+      "Development Workflow",
+      "Local Development",
+      "Detected local development scripts and package manager hints.",
+      developmentScripts,
+      ["development"],
+      enrichment?.workflows?.development,
+    )),
+  });
+
+  if (testScripts.length || repo.tests.length) {
+    entries.push({
+      entry: ["Testing", "testing.md", "Detected test scripts and test files."],
+      file: file("workflows/testing.md", workflowConcept(
+        repo,
+        "Test Workflow",
+        "Testing",
+        "Detected test scripts and test files.",
+        testScripts,
+        ["testing"],
+        enrichment?.workflows?.testing,
+        testsBody(repo),
+      )),
+    });
+  }
+
+  if (releaseScripts.length || repo.hasChangelog || repo.ci.length || hasEnrichedSection(enrichment?.workflows?.release)) {
+    entries.push({
+      entry: ["Release", "release.md", "Detected release and publishing hints."],
+      file: file("workflows/release.md", workflowConcept(
+        repo,
+        "Release Workflow",
+        "Release",
+        "Detected release and publishing scripts, changelog, and CI hints.",
+        releaseScripts,
+        ["release"],
+        enrichment?.workflows?.release,
+        releaseBody(repo),
+      )),
+    });
+  }
+
+  return entries;
+}
+
+function operationConceptFiles(repo: RepoInfo): Array<{
+  entry: [string, string, string];
+  file: OkfFile;
+}> {
+  const entries: Array<{ entry: [string, string, string]; file: OkfFile }> = [];
+
+  if (repo.configs.length) {
+    entries.push({
+      entry: ["Configuration", "configuration.md", "Detected configuration files."],
+      file: file("operations/configuration.md", listConcept(
+        repo,
+        "Configuration Inventory",
+        "Configuration Inventory",
+        "Detected repository configuration files.",
+        ["configuration"],
+        repo.configs,
+      )),
+    });
+  }
+
+  if (repo.ci.length) {
+    entries.push({
+      entry: ["CI Workflows", "ci.md", "Detected continuous integration workflow files."],
+      file: file("operations/ci.md", listConcept(
+        repo,
+        "CI Workflow",
+        "CI Workflows",
+        "Detected continuous integration workflow files.",
+        ["ci", "automation"],
+        repo.ci,
+      )),
+    });
+  }
+
+  if (repo.tests.length) {
+    entries.push({
+      entry: ["Test Suite", "test-suite.md", "Detected test files and test commands."],
+      file: file("operations/test-suite.md", listConcept(
+        repo,
+        "Test Suite",
+        "Test Suite",
+        "Detected test files in the repository.",
+        ["testing"],
+        repo.tests,
+      )),
+    });
+  }
+
+  return entries;
 }
 
 interface ConceptInput {
@@ -159,10 +220,12 @@ function rootIndex(repo: RepoInfo): string {
     ["Architecture", "architecture/", "High-level source structure and detected languages."],
     ["Packages", "packages/", "Detected package and manifest concepts."],
     ["Interfaces", "interfaces/", "Detected command line and public interfaces."],
-    ["Workflows", "workflows/", "Development, testing, and release workflows."],
+    ["Workflows", "workflows/", "Detected repository workflows."],
     ["Documentation", "docs/", "Detected project documentation."],
-    ["Operations", "operations/", "Configuration, CI, and test-suite inventories."],
   ];
+  if (repo.configs.length || repo.ci.length || repo.tests.length) {
+    entries.push(["Operations", "operations/", "Detected operational inventories."]);
+  }
   return sectionIndex(repo.name, entries);
 }
 
@@ -329,12 +392,8 @@ function cliBody(repo: RepoInfo): string {
   ].join("\n");
 }
 
-function workflowsIndex(repo: RepoInfo): string {
-  return sectionIndex("Workflows", [
-    ["Local Development", "local-development.md", "Detected local development scripts and package manager hints."],
-    ["Testing", "testing.md", "Detected test scripts and test files."],
-    ["Release", "release.md", "Detected release and publishing hints."],
-  ]);
+function workflowsIndex(workflows: Array<{ entry: [string, string, string] }>): string {
+  return sectionIndex("Workflows", workflows.map((workflow) => workflow.entry));
 }
 
 function workflowConcept(
@@ -549,6 +608,10 @@ function enrichedSection(title: string, section?: RepoEnrichment["documentation"
     enrichedBullets("Notes", section.bullets),
     enrichedCitations(section.citations),
   ].filter(Boolean).join("\n\n");
+}
+
+function hasEnrichedSection(section?: RepoEnrichment["documentation"]): boolean {
+  return Boolean(section && (section.summary || section.bullets.length || section.citations.length));
 }
 
 function enrichedBullets(title: string, bullets?: string[]): string {

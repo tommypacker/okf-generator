@@ -4,8 +4,20 @@ title: Release
 description: "Detected release and publishing scripts, changelog, and CI hints."
 resource: .
 tags: [release]
-timestamp: 2026-06-13T19:00:57.172Z
+timestamp: 2026-06-13T19:10:57.764Z
 ---
+
+# LLM Summary
+
+Releases are managed through npm scripts for building and checking the package.
+
+# Notes
+
+* Use `npm run build` to compile the TypeScript code.
+
+# Evidence
+
+* `./package.json`
 
 # Detected Scripts
 

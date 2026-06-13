@@ -4,12 +4,42 @@ title: okfgen
 description: Generate Open Knowledge Format bundles for software repositories.
 resource: .
 tags: [package]
-timestamp: 2026-06-13T19:00:57.172Z
+timestamp: 2026-06-13T19:10:57.764Z
 ---
 
 # Summary
 
-Generate Open Knowledge Format bundles for software repositories.
+The `okfgen` package generates Open Knowledge Format bundles for software repositories, focusing on scanning and documenting repository structures and contents.
+
+# Responsibilities
+
+* Generate OKF bundles from software repositories
+
+# Public Interfaces
+
+* okfgen CLI
+
+# Workflows
+
+* npm run build
+* npm run dev
+* npm run start
+* npm run check
+
+# Important Files
+
+* `src/cli.ts`
+* `package.json`
+* `README.md`
+
+# Risks And Unknowns
+
+* Generated OKF bundles may vary based on repository structure and content.
+
+# Evidence
+
+* `./README.md`
+* `./package.json`
 
 # Manifest
 

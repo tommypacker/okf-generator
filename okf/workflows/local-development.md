@@ -4,8 +4,20 @@ title: Local Development
 description: Detected local development scripts and package manager hints.
 resource: .
 tags: [development]
-timestamp: 2026-06-13T19:00:57.172Z
+timestamp: 2026-06-13T19:10:57.764Z
 ---
+
+# LLM Summary
+
+Development involves building and running the CLI for local testing.
+
+# Notes
+
+* Run `npm run dev` to start the development environment.
+
+# Evidence
+
+* `./README.md`
 
 # Detected Scripts
 

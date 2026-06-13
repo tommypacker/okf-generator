@@ -13,6 +13,7 @@ const IGNORED_DIRS = new Set([
   ".nuxt",
   ".turbo",
   ".cache",
+  ".okf-cache",
   ".venv",
   "venv",
   "__pycache__",

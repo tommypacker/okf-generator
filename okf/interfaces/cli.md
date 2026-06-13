@@ -4,7 +4,7 @@ title: Command Line Interfaces
 description: CLI entrypoints declared by repository package manifests.
 resource: .
 tags: [cli, interface]
-timestamp: 2026-06-13T19:00:57.172Z
+timestamp: 2026-06-13T19:10:57.764Z
 ---
 
 # Declared Commands
