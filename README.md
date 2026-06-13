@@ -112,8 +112,7 @@ node dist/cli.js generate \
   --out /path/to/repo/okf \
   --update \
   --mode quick \
-  --llm-model gpt-4o-mini \
-  --llm-base-url https://api.openai.com/v1
+  --llm-model gpt-4o-mini
 ```
 
 Environment variables:
