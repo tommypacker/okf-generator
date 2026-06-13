@@ -4,12 +4,12 @@ title: Architecture Overview
 description: "Detected source areas, languages, and package structure."
 resource: .
 tags: [architecture]
-timestamp: 2026-06-13T19:14:24.524Z
+timestamp: 2026-06-13T19:39:57.551Z
 ---
 
 # LLM Architecture Notes
 
-* Local TypeScript CLI that scans common repository files and generates OKF bundles
+* The package utilizes a CLI for user interaction and various modules for scanning, generating, and validating OKF bundles.
 
 # Source Areas
 

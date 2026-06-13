@@ -106,7 +106,7 @@ function workflowConceptFiles(repo: RepoInfo, enrichment?: RepoEnrichment): Arra
     });
   }
 
-  if (releaseScripts.length || repo.hasChangelog || repo.ci.length || hasEnrichedSection(enrichment?.workflows?.release)) {
+  if (releaseScripts.length || repo.hasChangelog || repo.ci.length) {
     entries.push({
       entry: ["Release", "release.md", "Detected release and publishing hints."],
       file: file("workflows/release.md", workflowConcept(
@@ -236,6 +236,7 @@ function repositoryBody(repo: RepoInfo, enrichment?: RepoEnrichment): string {
     ].join("\n"),
     enrichmentSummary(enrichment),
     enrichedBullets("Purpose", enrichment?.overview?.purpose),
+    enrichedBullets("Architecture Notes", enrichment?.overview?.architecture),
     enrichedBullets("Important Files", enrichment?.overview?.importantFiles?.map(code)),
     enrichedCitations(enrichment?.overview?.citations),
     [
@@ -332,6 +333,7 @@ function packageConcept(repo: RepoInfo, pkg: PackageInfo, enrichment?: RepoEnric
         packageEnrichment?.summary || pkg.summary,
       ].join("\n"),
       enrichedBullets("Responsibilities", packageEnrichment?.responsibilities),
+      enrichedBullets("Implementation Notes", packageEnrichment?.implementation),
       enrichedBullets("Public Interfaces", packageEnrichment?.publicInterfaces),
       enrichedBullets("Workflows", packageEnrichment?.workflows),
       enrichedBullets("Important Files", packageEnrichment?.importantFiles?.map(code)),
@@ -599,10 +601,6 @@ function enrichedSection(title: string, section?: RepoEnrichment["documentation"
     enrichedBullets("Notes", section.bullets),
     enrichedCitations(section.citations),
   ].filter(Boolean).join("\n\n");
-}
-
-function hasEnrichedSection(section?: RepoEnrichment["documentation"]): boolean {
-  return Boolean(section && (section.summary || section.bullets.length || section.citations.length));
 }
 
 function enrichedBullets(title: string, bullets?: string[]): string {

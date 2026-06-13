@@ -4,20 +4,20 @@ title: Local Development
 description: Detected local development scripts and package manager hints.
 resource: .
 tags: [development]
-timestamp: 2026-06-13T19:14:24.524Z
+timestamp: 2026-06-13T19:39:57.551Z
 ---
 
 # LLM Summary
 
-Development involves building and running the CLI for local testing.
+The development workflow involves initializing and configuring the repository for OKF generation.
 
 # Notes
 
-* Run `npm run dev` to start the development environment.
+* Users can run `okfgen init` to set up the configuration for the repository.
 
 # Evidence
 
-* `./README.md`
+* `README.md`
 
 # Detected Scripts
 

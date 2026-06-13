@@ -62,6 +62,44 @@ const PACKAGE_CONFIG_FILENAMES = new Set([
     "drizzle.config.ts",
     "tailwind.config.ts",
 ]);
+const SOURCE_DIR_SEGMENTS = new Set([
+    "src",
+    "lib",
+    "app",
+    "apps",
+    "packages",
+    "crates",
+    "cmd",
+    "internal",
+    "pkg",
+    "services",
+]);
+const IMPORTANT_SOURCE_BASENAMES = new Set([
+    "agent",
+    "api",
+    "cli",
+    "client",
+    "config",
+    "controller",
+    "diff",
+    "enrichment",
+    "generator",
+    "index",
+    "main",
+    "model",
+    "okf",
+    "parser",
+    "renderer",
+    "router",
+    "scanner",
+    "schema",
+    "server",
+    "service",
+    "types",
+    "utils",
+    "validator",
+    "worker",
+]);
 export function llmOptionsFromEnv(overrides = {}) {
     return {
         enabled: overrides.enabled ?? false,
@@ -249,6 +287,10 @@ function rankEvidenceFiles(repo, allFiles) {
             score += 90;
         if (repo.bins.some((bin) => normalizeBinTarget(bin.packagePath, bin.target) === file))
             score += 80;
+        if (isSourceFile(file))
+            score += 35;
+        if (isImportantSourceModule(file))
+            score += 35;
         if (/(^|\/)(index|main|cli|server|app)\.[cm]?[jt]sx?$/.test(file))
             score += 55;
         if (/(^|\/)(main|lib)\.(py|go|rs)$/.test(file))
@@ -273,6 +315,19 @@ function rankEvidenceFiles(repo, allFiles) {
     return [...scores.entries()]
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
         .map(([file]) => file);
+}
+function isSourceFile(file) {
+    if (!/\.(c|cc|cpp|cs|go|java|js|jsx|kt|mjs|py|rb|rs|ts|tsx)$/.test(file)) {
+        return false;
+    }
+    return file.split("/").some((segment) => SOURCE_DIR_SEGMENTS.has(segment));
+}
+function isImportantSourceModule(file) {
+    if (!isSourceFile(file)) {
+        return false;
+    }
+    const stem = path.basename(file, path.extname(file)).toLowerCase();
+    return IMPORTANT_SOURCE_BASENAMES.has(stem);
 }
 async function readBoundedText(filePath, maxBytes) {
     const handle = await fs.open(filePath, "r");
@@ -395,6 +450,7 @@ function buildPrompt(repo, evidence, packageSummaries = []) {
                     packagePath: ".",
                     summary: "1-3 sentence package summary",
                     responsibilities: ["short supported responsibility"],
+                    implementation: ["4-8 source-file-specific bullets explaining how important modules implement behavior"],
                     publicInterfaces: ["supported public interface or entrypoint"],
                     workflows: ["supported package workflow"],
                     importantFiles: ["path"],
@@ -409,7 +465,11 @@ function buildPrompt(repo, evidence, packageSummaries = []) {
             documentation: { summary: "short summary", bullets: ["supported bullet"], citations: ["path"] },
         }),
         "Rules:",
+        "- Explain what the repository code actually does, not only what the README says.",
+        "- Prefer concrete implementation details from source files: scanners, renderers, adapters, validators, CLIs, APIs, data flow, and file responsibilities.",
         "- Keep bullets factual and specific.",
+        "- For implementation notes, name concrete source paths and describe each file's role.",
+        "- Citations must include source files used for implementation notes, not only README or manifest files.",
         "- Cite only paths present in evidence.",
         "- If evidence is missing for a section, use empty strings/arrays.",
         "- Do not mention that you are an AI.",
@@ -444,6 +504,7 @@ function buildFinalRollupPrompt(repo, packageSummaries, chunkSummaries) {
                     packagePath: ".",
                     summary: "1-3 sentence package summary",
                     responsibilities: ["short supported responsibility"],
+                    implementation: ["4-8 source-file-specific bullets explaining how important modules implement behavior"],
                     publicInterfaces: ["supported public interface or entrypoint"],
                     workflows: ["supported package workflow"],
                     importantFiles: ["path"],
@@ -458,7 +519,11 @@ function buildFinalRollupPrompt(repo, packageSummaries, chunkSummaries) {
             documentation: { summary: "short summary", bullets: ["supported bullet"], citations: ["path"] },
         }),
         "Rules:",
+        "- Explain what the repository code actually does, not only what the README says.",
+        "- Prefer concrete implementation details from source files: scanners, renderers, adapters, validators, CLIs, APIs, data flow, and file responsibilities.",
         "- Keep bullets factual and specific.",
+        "- Preserve source-file-specific implementation notes from package summaries.",
+        "- Citations must include source files used for implementation notes, not only README or manifest files.",
         "- Prefer concrete source paths already present in package or chunk citations.",
         "- If evidence is missing for a section, use empty strings/arrays.",
         "- Do not mention that you are an AI.",
@@ -499,6 +564,7 @@ function buildPackagePrompt(repo, pkg, evidence) {
             packagePath: pkg.path,
             summary: "1-3 sentence package summary",
             responsibilities: ["short supported responsibility"],
+            implementation: ["4-8 source-file-specific bullets explaining how important modules implement behavior"],
             publicInterfaces: ["supported public interface or entrypoint"],
             workflows: ["supported package workflow"],
             importantFiles: ["path"],
@@ -507,6 +573,12 @@ function buildPackagePrompt(repo, pkg, evidence) {
         }),
         "Rules:",
         "- Use only the supplied evidence files.",
+        "- Explain what the package code actually does, not only what manifests or README files say.",
+        "- Prefer concrete implementation details from source files: scanners, renderers, adapters, validators, CLIs, APIs, data flow, and file responsibilities.",
+        "- Write 4-8 implementation bullets when enough source files are present.",
+        "- Each implementation bullet should mention a concrete source path and what that file does.",
+        "- Citations must include source files used for implementation notes, not only README or manifest files.",
+        "- Mention important source files by path and describe their roles.",
         "- Keep bullets factual and specific.",
         "- Cite only paths present in evidence.",
         "- Use the __file_tree__.txt evidence to understand package shape, but cite concrete files when possible.",
@@ -564,6 +636,7 @@ function assertUsableEnrichment(enrichment) {
         enrichment.overview?.architecture.length);
     const hasPackages = enrichment.packages.some((pkg) => pkg.summary ||
         pkg.responsibilities.length ||
+        pkg.implementation.length ||
         pkg.publicInterfaces.length ||
         pkg.workflows.length ||
         pkg.importantFiles.length);
@@ -593,6 +666,7 @@ function normalizePackage(value) {
         packagePath: stringValue(record.packagePath),
         summary: stringValue(record.summary),
         responsibilities: stringArray(record.responsibilities),
+        implementation: stringArray(record.implementation),
         publicInterfaces: stringArray(record.publicInterfaces),
         workflows: stringArray(record.workflows),
         importantFiles: stringArray(record.importantFiles),
@@ -623,6 +697,7 @@ function mergePackageSummaries(explored, rollup) {
             packagePath: item.packagePath,
             summary: existing.summary || item.summary,
             responsibilities: uniqueStrings([...existing.responsibilities, ...item.responsibilities]),
+            implementation: uniqueStrings([...existing.implementation, ...item.implementation]),
             publicInterfaces: uniqueStrings([...existing.publicInterfaces, ...item.publicInterfaces]),
             workflows: uniqueStrings([...existing.workflows, ...item.workflows]),
             importantFiles: uniqueStrings([...existing.importantFiles, ...item.importantFiles]),

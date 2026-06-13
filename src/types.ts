@@ -146,6 +146,7 @@ export interface EnrichedPackage {
   packagePath: string;
   summary: string;
   responsibilities: string[];
+  implementation: string[];
   publicInterfaces: string[];
   workflows: string[];
   importantFiles: string[];

@@ -72,7 +72,7 @@ function workflowConceptFiles(repo, enrichment) {
             file: file("workflows/testing.md", workflowConcept(repo, "Testing", "Detected test scripts and test files.", testScripts, ["testing"], enrichment?.workflows?.testing, testsBody(repo))),
         });
     }
-    if (releaseScripts.length || repo.hasChangelog || repo.ci.length || hasEnrichedSection(enrichment?.workflows?.release)) {
+    if (releaseScripts.length || repo.hasChangelog || repo.ci.length) {
         entries.push({
             entry: ["Release", "release.md", "Detected release and publishing hints."],
             file: file("workflows/release.md", workflowConcept(repo, "Release", "Detected release and publishing scripts, changelog, and CI hints.", releaseScripts, ["release"], enrichment?.workflows?.release, releaseBody(repo))),
@@ -146,7 +146,7 @@ function repositoryBody(repo, enrichment) {
         "# Summary",
         "",
         enrichment?.overview?.summary || repo.summary,
-    ].join("\n"), enrichmentSummary(enrichment), enrichedBullets("Purpose", enrichment?.overview?.purpose), enrichedBullets("Important Files", enrichment?.overview?.importantFiles?.map(code)), enrichedCitations(enrichment?.overview?.citations), [
+    ].join("\n"), enrichmentSummary(enrichment), enrichedBullets("Purpose", enrichment?.overview?.purpose), enrichedBullets("Architecture Notes", enrichment?.overview?.architecture), enrichedBullets("Important Files", enrichment?.overview?.importantFiles?.map(code)), enrichedCitations(enrichment?.overview?.citations), [
         "# Detected Metadata",
         "",
         table([
@@ -224,7 +224,7 @@ function packageConcept(repo, pkg, enrichment) {
             "# Summary",
             "",
             packageEnrichment?.summary || pkg.summary,
-        ].join("\n"), enrichedBullets("Responsibilities", packageEnrichment?.responsibilities), enrichedBullets("Public Interfaces", packageEnrichment?.publicInterfaces), enrichedBullets("Workflows", packageEnrichment?.workflows), enrichedBullets("Important Files", packageEnrichment?.importantFiles?.map(code)), enrichedBullets("Risks And Unknowns", packageEnrichment?.risksOrUnknowns), enrichedCitations(packageEnrichment?.citations), [
+        ].join("\n"), enrichedBullets("Responsibilities", packageEnrichment?.responsibilities), enrichedBullets("Implementation Notes", packageEnrichment?.implementation), enrichedBullets("Public Interfaces", packageEnrichment?.publicInterfaces), enrichedBullets("Workflows", packageEnrichment?.workflows), enrichedBullets("Important Files", packageEnrichment?.importantFiles?.map(code)), enrichedBullets("Risks And Unknowns", packageEnrichment?.risksOrUnknowns), enrichedCitations(packageEnrichment?.citations), [
             "# Manifest",
             "",
             `Detected manifest: ${sourceRef(repo, pkg.manifestPath)}.`,
@@ -421,9 +421,6 @@ function enrichedSection(title, section) {
         enrichedBullets("Notes", section.bullets),
         enrichedCitations(section.citations),
     ].filter(Boolean).join("\n\n");
-}
-function hasEnrichedSection(section) {
-    return Boolean(section && (section.summary || section.bullets.length || section.citations.length));
 }
 function enrichedBullets(title, bullets) {
     const filtered = bullets?.filter(Boolean) ?? [];

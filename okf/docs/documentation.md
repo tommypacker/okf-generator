@@ -4,20 +4,20 @@ title: Documentation Inventory
 description: Detected repository documentation files.
 resource: .
 tags: [documentation]
-timestamp: 2026-06-13T19:14:24.524Z
+timestamp: 2026-06-13T19:39:57.551Z
 ---
 
 # LLM Summary
 
-Documentation is provided in the README file, detailing installation, commands, and usage.
+The documentation provides an overview of the package's functionality and usage instructions.
 
 # Notes
 
-* Refer to `README.md` for comprehensive usage instructions.
+* The README file contains detailed instructions on installation, commands, and configuration options.
 
 # Evidence
 
-* `./README.md`
+* `README.md`
 
 # Files
 
