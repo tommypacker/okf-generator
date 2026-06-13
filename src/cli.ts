@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import path from "node:path";
-import { loadRepoOkfConfig, writeDefaultConfig, type RepoOkfConfig } from "./config.js";
+import { CONFIG_FILE, loadRepoOkfConfig, writeDefaultConfig, type RepoOkfConfig } from "./config.js";
 import { diffOkf, writeGeneratedBundle } from "./diff.js";
 import { llmOptionsFromEnv } from "./enrichment.js";
 import { normalizePath } from "./fs-utils.js";
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
     const repo = resolveFlag(parsed, "repo", ".");
     const target = parsed.positionals[0];
     if (!target) {
-      throw new Error("Missing package name or path. Usage: repo-okf explain <package-or-path> [--repo <path>].");
+      throw new Error("Missing package name or path. Usage: okfgen explain <package-or-path> [--repo <path>].");
     }
 
     const config = await loadRepoOkfConfig(repo);
@@ -247,13 +247,13 @@ function generationModeFlag(parsed: ParsedArgs, config: Partial<RepoOkfConfig>):
     throw new Error(`Invalid --mode value: ${mode}. Expected scan, quick, or explore.`);
   }
 
-  const envMode = process.env.REPO_OKF_MODE;
+  const envMode = envValue("OKFGEN_MODE", "REPO_OKF_MODE");
   if (envMode) {
     if (envMode === "scan" || envMode === "quick" || envMode === "explore") {
       return envMode;
     }
 
-    throw new Error(`Invalid REPO_OKF_MODE value: ${envMode}. Expected scan, quick, or explore.`);
+    throw new Error(`Invalid OKFGEN_MODE value: ${envMode}. Expected scan, quick, or explore.`);
   }
 
   if (config.mode) {
@@ -293,7 +293,7 @@ function resolveScanOptions(parsed: ParsedArgs, config: Partial<RepoOkfConfig> =
 }
 
 function packageScopeFlag(parsed: ParsedArgs, config: Partial<RepoOkfConfig>): PackageScope {
-  const value = stringFlag(parsed, "package-scope") ?? process.env.REPO_OKF_PACKAGE_SCOPE ?? config.packageScope ?? "primary";
+  const value = stringFlag(parsed, "package-scope") ?? envValue("OKFGEN_PACKAGE_SCOPE", "REPO_OKF_PACKAGE_SCOPE") ?? config.packageScope ?? "primary";
   if (value === "primary" || value === "workspaces" || value === "all") {
     return value;
   }
@@ -317,7 +317,7 @@ function createProgressReporter(parsed: ParsedArgs): ProgressReporter | undefine
   }
 
   return (message: string) => {
-    console.error(`[repo-okf] ${message}`);
+    console.error(`[okfgen] ${message}`);
   };
 }
 
@@ -433,17 +433,17 @@ function packageInclusionReason(repo: RepoInfo, pkg: PackageInfo, scanOptions: S
 }
 
 function printHelp(): void {
-  console.log(`repo-okf
+  console.log(`okfgen
 
 Usage:
-  repo-okf init [--repo <path>] [--force] [--quiet]
-  repo-okf generate [--repo <path>] [--out <path>] [--update|--reset] [--mode <scan|quick|explore>] [--package-scope <primary|workspaces|all>] [--quiet]
-  repo-okf diff [--repo <path>] [--okf <path>] [--check] [--mode <scan|quick|explore>] [--package-scope <primary|workspaces|all>] [--quiet]
-  repo-okf explain <package-or-path> [--repo <path>] [--package-scope <primary|workspaces|all>] [--quiet]
-  repo-okf validate [--okf <path>] [--quiet]
+  okfgen init [--repo <path>] [--force] [--quiet]
+  okfgen generate [--repo <path>] [--out <path>] [--update|--reset] [--mode <scan|quick|explore>] [--package-scope <primary|workspaces|all>] [--quiet]
+  okfgen diff [--repo <path>] [--okf <path>] [--check] [--mode <scan|quick|explore>] [--package-scope <primary|workspaces|all>] [--quiet]
+  okfgen explain <package-or-path> [--repo <path>] [--package-scope <primary|workspaces|all>] [--quiet]
+  okfgen validate [--okf <path>] [--quiet]
 
 Commands:
-  init       Write a default repo-okf.config.json.
+  init       Write a default ${CONFIG_FILE}.
   generate   Generate an OKF bundle for a repository.
   diff       Regenerate to a temporary directory and compare with an OKF bundle.
   explain    Explain why a detected package is included and where its OKF file is written.
@@ -452,10 +452,10 @@ Commands:
 Common options:
   --repo <path>                 Repository to inspect. Defaults to the current directory.
   --quiet                       Hide progress messages. Final command output is still printed.
-  repo-okf.config.json          Optional repo config. CLI flags override config values.
+  ${CONFIG_FILE}              Optional repo config. CLI flags override config values.
 
 init options:
-  --force                       Replace an existing repo-okf.config.json.
+  --force                       Replace an existing ${CONFIG_FILE}.
 
 generate options:
   --out <path>                  Output directory for generated OKF files. Defaults to <repo>/okf.
@@ -483,9 +483,9 @@ LLM enrichment:
   scan                          Offline repository scan only.
   quick                         One LLM rollup call over selected evidence files.
   explore                       Package-level LLM calls plus a repository rollup.
-  --llm-model <model>           Model name. Defaults to REPO_OKF_LLM_MODEL or gpt-4o-mini.
+  --llm-model <model>           Model name. Defaults to OKFGEN_LLM_MODEL or gpt-4o-mini.
   --llm-base-url <url>          API base URL. Defaults to OPENAI_BASE_URL or https://api.openai.com/v1.
-  --llm-api-key <key>           API key. Defaults to REPO_OKF_LLM_API_KEY or OPENAI_API_KEY.
+  --llm-api-key <key>           API key. Defaults to OKFGEN_LLM_API_KEY or OPENAI_API_KEY.
   --llm-max-files <count>       Evidence file limit.
   --llm-max-bytes-per-file <n>  Per-file evidence byte limit.
   --llm-max-package-calls <n>   Package-level call limit for explore mode.
@@ -496,20 +496,26 @@ LLM enrichment:
   --no-cache                    Disable cached LLM responses for this run.
 
 Environment:
-  REPO_OKF_MODE                 Default mode: scan, quick, or explore.
-  REPO_OKF_PACKAGE_SCOPE        Default package scope: primary, workspaces, or all.
-  REPO_OKF_LLM_API_KEY          API key for quick/explore mode.
+  OKFGEN_MODE                  Default mode: scan, quick, or explore.
+  OKFGEN_PACKAGE_SCOPE         Default package scope: primary, workspaces, or all.
+  OKFGEN_LLM_API_KEY           API key for quick/explore mode.
   OPENAI_API_KEY                Fallback API key for quick/explore mode.
-  REPO_OKF_LLM_MODEL            Default LLM model.
-  REPO_OKF_LLM_BASE_URL         Default OpenAI-compatible API base URL.
+  OKFGEN_LLM_MODEL             Default LLM model.
+  OKFGEN_LLM_BASE_URL          Default OpenAI-compatible API base URL.
   OPENAI_BASE_URL               Fallback OpenAI-compatible API base URL.
-  REPO_OKF_LLM_CACHE            Set to false to disable LLM response caching.
-  REPO_OKF_LLM_CACHE_DIR        Default directory for cached LLM JSON responses.
+  OKFGEN_LLM_CACHE             Set to false to disable LLM response caching.
+  OKFGEN_LLM_CACHE_DIR         Default directory for cached LLM JSON responses.
+
+Legacy REPO_OKF_* environment variables are still accepted as fallbacks.
 `);
 }
 
 main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.error(`repo-okf: ${message}`);
+  console.error(`okfgen: ${message}`);
   process.exitCode = 1;
 });
+
+function envValue(primary: string, legacy: string): string | undefined {
+  return process.env[primary] ?? process.env[legacy];
+}

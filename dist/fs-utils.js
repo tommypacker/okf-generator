@@ -17,7 +17,7 @@ const IGNORED_DIRS = new Set([
     "__pycache__",
     "target",
     "vendor",
-    ".repo-okf-tmp",
+    ".okfgen-tmp",
     ".okf-draft",
     "okf",
 ]);

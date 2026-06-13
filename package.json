@@ -1,10 +1,10 @@
 {
-  "name": "repo-okf",
+  "name": "okfgen",
   "version": "0.1.0",
   "description": "Generate Open Knowledge Format bundles for software repositories.",
   "type": "module",
   "bin": {
-    "repo-okf": "./dist/cli.js"
+    "okfgen": "./dist/cli.js"
   },
   "exports": {
     ".": {

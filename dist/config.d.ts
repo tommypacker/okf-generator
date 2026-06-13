@@ -1,4 +1,5 @@
 import type { PackageScope } from "./types.js";
+export declare const CONFIG_FILE = "okfgen.config.json";
 export interface RepoOkfConfig {
     output: string;
     mode?: "scan" | "quick" | "explore";

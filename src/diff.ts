@@ -16,7 +16,7 @@ export async function diffOkf(
   progress?: ProgressReporter,
   scanOptions?: Partial<ScanOptions>,
 ): Promise<DiffResult> {
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "repo-okf-"));
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "okfgen-"));
   const generatedPath = path.join(tempRoot, "generated");
 
   try {
@@ -103,7 +103,7 @@ function renderGeneratedBundle(
   return [
     ...generateOkfFiles(repo, enrichment),
     {
-      path: ".repo-okf.json",
+      path: ".okfgen.json",
       content: `${JSON.stringify(generationManifest(repo, llmOptions, scanOptions), null, 2)}\n`,
     },
   ].sort((a, b) => a.path.localeCompare(b.path));
@@ -115,7 +115,7 @@ function generationManifest(
   scanOptions?: Partial<ScanOptions>,
 ): Record<string, unknown> {
   return {
-    tool: "repo-okf",
+    tool: "okfgen",
     toolVersion: TOOL_VERSION,
     generatedAt: repo.scannedAt,
     repository: {

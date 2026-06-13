@@ -1,6 +1,6 @@
-# repo-okf
+# okfgen
 
-`repo-okf` generates an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle for a software repository.
+`okfgen` generates an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle for a software repository.
 
 The first version is a local TypeScript CLI focused on open source repos. It scans common repository files, package manifests, docs, CI workflows, tests, configs, and package directories, then writes a reviewable OKF bundle.
 
@@ -14,15 +14,15 @@ npm run build
 ## Commands
 
 ```bash
-repo-okf init --repo /path/to/repo
-repo-okf generate --repo /path/to/repo --out /path/to/repo/okf
-repo-okf generate --repo /path/to/repo --out /path/to/repo/okf --update --mode quick
-repo-okf generate --repo /path/to/repo --out /path/to/repo/okf --reset --mode explore
-repo-okf generate --repo /path/to/repo --out /path/to/repo/okf --package-scope workspaces
-repo-okf generate --repo /path/to/repo --out /path/to/repo/okf --package-scope all
-repo-okf diff --repo /path/to/repo --okf /path/to/repo/okf
-repo-okf explain <package-or-path> --repo /path/to/repo
-repo-okf validate --okf /path/to/repo/okf
+okfgen init --repo /path/to/repo
+okfgen generate --repo /path/to/repo --out /path/to/repo/okf
+okfgen generate --repo /path/to/repo --out /path/to/repo/okf --update --mode quick
+okfgen generate --repo /path/to/repo --out /path/to/repo/okf --reset --mode explore
+okfgen generate --repo /path/to/repo --out /path/to/repo/okf --package-scope workspaces
+okfgen generate --repo /path/to/repo --out /path/to/repo/okf --package-scope all
+okfgen diff --repo /path/to/repo --okf /path/to/repo/okf
+okfgen explain <package-or-path> --repo /path/to/repo
+okfgen validate --okf /path/to/repo/okf
 ```
 
 During local development, run the built CLI with:
@@ -34,11 +34,11 @@ node dist/cli.js generate --repo . --out okf
 The CLI prints progress messages to stderr by default:
 
 ```text
-[repo-okf] Starting generation. Output: /path/to/repo/okf
-[repo-okf] Scanning repository: /path/to/repo
-[repo-okf] Detected repo "example": 2 package(s), 4 doc file(s), ...
-[repo-okf] Rendering OKF files.
-[repo-okf] Writing 21 OKF files to /path/to/repo/okf.
+[okfgen] Starting generation. Output: /path/to/repo/okf
+[okfgen] Scanning repository: /path/to/repo
+[okfgen] Detected repo "example": 2 package(s), 4 doc file(s), ...
+[okfgen] Rendering OKF files.
+[okfgen] Writing 21 OKF files to /path/to/repo/okf.
 ```
 
 Use `--quiet` to suppress progress output:
@@ -49,7 +49,7 @@ node dist/cli.js generate --repo . --out okf --quiet
 
 ## Config
 
-`repo-okf init` writes `repo-okf.config.json` into the target repository. `generate`, `diff`, and `explain` automatically read it. CLI flags override config values.
+`okfgen init` writes `okfgen.config.json` into the target repository. `generate`, `diff`, and `explain` automatically read it. CLI flags override config values.
 
 ```bash
 node dist/cli.js init --repo /path/to/repo
@@ -116,16 +116,16 @@ node dist/cli.js generate \
 
 Environment variables:
 
-- `REPO_OKF_LLM_API_KEY` or `OPENAI_API_KEY`
-- `REPO_OKF_MODE`
-- `REPO_OKF_PACKAGE_SCOPE`
-- `REPO_OKF_LLM_MODEL`
-- `REPO_OKF_LLM_BASE_URL` or `OPENAI_BASE_URL`
-- `REPO_OKF_LLM_MAX_FILES`
-- `REPO_OKF_LLM_MAX_FILES_PER_ROLLUP_CHUNK`
-- `REPO_OKF_LLM_MAX_BYTES_PER_FILE`
-- `REPO_OKF_LLM_MAX_PACKAGE_CALLS`
-- `REPO_OKF_LLM_MAX_PACKAGE_FILES`
+- `OKFGEN_LLM_API_KEY` or `OPENAI_API_KEY`
+- `OKFGEN_MODE`
+- `OKFGEN_PACKAGE_SCOPE`
+- `OKFGEN_LLM_MODEL`
+- `OKFGEN_LLM_BASE_URL` or `OPENAI_BASE_URL`
+- `OKFGEN_LLM_MAX_FILES`
+- `OKFGEN_LLM_MAX_FILES_PER_ROLLUP_CHUNK`
+- `OKFGEN_LLM_MAX_BYTES_PER_FILE`
+- `OKFGEN_LLM_MAX_PACKAGE_CALLS`
+- `OKFGEN_LLM_MAX_PACKAGE_FILES`
 
 Modes:
 
@@ -148,7 +148,7 @@ node dist/cli.js generate \
 
 ## Diffing
 
-`repo-okf diff` regenerates the bundle into a temporary directory and compares it against the committed OKF directory. It reports added, removed, and changed files. Use `--check` in CI to exit non-zero when the OKF bundle is stale.
+`okfgen diff` regenerates the bundle into a temporary directory and compares it against the committed OKF directory. It reports added, removed, and changed files. Use `--check` in CI to exit non-zero when the OKF bundle is stale.
 
 ```bash
 node dist/cli.js diff --repo . --okf okf --check
@@ -168,14 +168,14 @@ The generator intentionally starts conservative. It creates concepts for:
 
 Generated claims are grounded in detected files and manifests rather than inferred behavior.
 
-Each generated bundle also includes `.repo-okf.json`, a machine-readable generation manifest with the tool version, mode, package scope, repository identity, and generated file list.
+Each generated bundle also includes `.okfgen.json`, a machine-readable generation manifest with the tool version, mode, package scope, repository identity, and generated file list.
 
 ## Explain
 
 Use `explain` to inspect why a package was included and where its OKF file is written:
 
 ```bash
-node dist/cli.js explain repo-okf --repo .
+node dist/cli.js explain okfgen --repo .
 node dist/cli.js explain packages/web --repo /path/to/repo --package-scope workspaces
 ```
 
@@ -188,7 +188,7 @@ LLM responses are cached by prompt, model, and base URL to avoid paying for iden
 ```bash
 node dist/cli.js generate --repo . --mode explore --update
 node dist/cli.js generate --repo . --mode explore --update --no-cache
-node dist/cli.js generate --repo . --mode explore --update --cache-dir .repo-okf-cache
+node dist/cli.js generate --repo . --mode explore --update --cache-dir .okfgen-cache
 ```
 
-The default cache directory is `.okf-cache` under the scanned repository. Set `REPO_OKF_LLM_CACHE=false` to disable caching or `REPO_OKF_LLM_CACHE_DIR` to choose a default cache directory.
+The default cache directory is `.okf-cache` under the scanned repository. Set `OKFGEN_LLM_CACHE=false` to disable caching or `OKFGEN_LLM_CACHE_DIR` to choose a default cache directory.

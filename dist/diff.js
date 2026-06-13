@@ -7,7 +7,7 @@ import { generateOkfFiles } from "./okf.js";
 import { scanRepo } from "./scanner.js";
 const TOOL_VERSION = "0.1.0";
 export async function diffOkf(repoPath, okfPath, llmOptions, progress, scanOptions) {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "repo-okf-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "okfgen-"));
     const generatedPath = path.join(tempRoot, "generated");
     try {
         progress?.(`Scanning repository: ${repoPath}`);
@@ -74,14 +74,14 @@ function renderGeneratedBundle(repo, enrichment, llmOptions, scanOptions) {
     return [
         ...generateOkfFiles(repo, enrichment),
         {
-            path: ".repo-okf.json",
+            path: ".okfgen.json",
             content: `${JSON.stringify(generationManifest(repo, llmOptions, scanOptions), null, 2)}\n`,
         },
     ].sort((a, b) => a.path.localeCompare(b.path));
 }
 function generationManifest(repo, llmOptions, scanOptions) {
     return {
-        tool: "repo-okf",
+        tool: "okfgen",
         toolVersion: TOOL_VERSION,
         generatedAt: repo.scannedAt,
         repository: {

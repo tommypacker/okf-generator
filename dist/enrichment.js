@@ -67,21 +67,21 @@ export function llmOptionsFromEnv(overrides = {}) {
         enabled: overrides.enabled ?? false,
         provider: "openai-compatible",
         mode: overrides.mode ?? llmModeFromEnv(),
-        apiKey: overrides.apiKey ?? process.env.REPO_OKF_LLM_API_KEY ?? process.env.OPENAI_API_KEY,
-        baseUrl: trimTrailingSlash(overrides.baseUrl ?? process.env.REPO_OKF_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? DEFAULT_BASE_URL),
-        model: overrides.model ?? process.env.REPO_OKF_LLM_MODEL ?? DEFAULT_MODEL,
-        maxFiles: overrides.maxFiles ?? numberFromEnv("REPO_OKF_LLM_MAX_FILES", defaultMaxFiles(overrides.mode ?? llmModeFromEnv())),
-        maxBytesPerFile: overrides.maxBytesPerFile ?? numberFromEnv("REPO_OKF_LLM_MAX_BYTES_PER_FILE", DEFAULT_MAX_BYTES_PER_FILE),
-        maxPackageCalls: overrides.maxPackageCalls ?? numberFromEnv("REPO_OKF_LLM_MAX_PACKAGE_CALLS", DEFAULT_MAX_PACKAGE_CALLS),
-        maxPackageFiles: overrides.maxPackageFiles ?? numberFromEnv("REPO_OKF_LLM_MAX_PACKAGE_FILES", DEFAULT_MAX_PACKAGE_FILES),
-        maxFilesPerRollupChunk: overrides.maxFilesPerRollupChunk ?? numberFromEnv("REPO_OKF_LLM_MAX_FILES_PER_ROLLUP_CHUNK", DEFAULT_MAX_FILES_PER_ROLLUP_CHUNK),
-        cache: overrides.cache ?? process.env.REPO_OKF_LLM_CACHE !== "false",
-        cacheDir: overrides.cacheDir ?? process.env.REPO_OKF_LLM_CACHE_DIR,
+        apiKey: overrides.apiKey ?? envValue("OKFGEN_LLM_API_KEY", "REPO_OKF_LLM_API_KEY") ?? process.env.OPENAI_API_KEY,
+        baseUrl: trimTrailingSlash(overrides.baseUrl ?? envValue("OKFGEN_LLM_BASE_URL", "REPO_OKF_LLM_BASE_URL") ?? process.env.OPENAI_BASE_URL ?? DEFAULT_BASE_URL),
+        model: overrides.model ?? envValue("OKFGEN_LLM_MODEL", "REPO_OKF_LLM_MODEL") ?? DEFAULT_MODEL,
+        maxFiles: overrides.maxFiles ?? numberFromEnv("OKFGEN_LLM_MAX_FILES", "REPO_OKF_LLM_MAX_FILES", defaultMaxFiles(overrides.mode ?? llmModeFromEnv())),
+        maxBytesPerFile: overrides.maxBytesPerFile ?? numberFromEnv("OKFGEN_LLM_MAX_BYTES_PER_FILE", "REPO_OKF_LLM_MAX_BYTES_PER_FILE", DEFAULT_MAX_BYTES_PER_FILE),
+        maxPackageCalls: overrides.maxPackageCalls ?? numberFromEnv("OKFGEN_LLM_MAX_PACKAGE_CALLS", "REPO_OKF_LLM_MAX_PACKAGE_CALLS", DEFAULT_MAX_PACKAGE_CALLS),
+        maxPackageFiles: overrides.maxPackageFiles ?? numberFromEnv("OKFGEN_LLM_MAX_PACKAGE_FILES", "REPO_OKF_LLM_MAX_PACKAGE_FILES", DEFAULT_MAX_PACKAGE_FILES),
+        maxFilesPerRollupChunk: overrides.maxFilesPerRollupChunk ?? numberFromEnv("OKFGEN_LLM_MAX_FILES_PER_ROLLUP_CHUNK", "REPO_OKF_LLM_MAX_FILES_PER_ROLLUP_CHUNK", DEFAULT_MAX_FILES_PER_ROLLUP_CHUNK),
+        cache: overrides.cache ?? envValue("OKFGEN_LLM_CACHE", "REPO_OKF_LLM_CACHE") !== "false",
+        cacheDir: overrides.cacheDir ?? envValue("OKFGEN_LLM_CACHE_DIR", "REPO_OKF_LLM_CACHE_DIR"),
     };
 }
 export async function enrichRepo(repo, options, progress) {
     if (!options.apiKey) {
-        throw new Error("LLM enrichment requires REPO_OKF_LLM_API_KEY or OPENAI_API_KEY.");
+        throw new Error("LLM enrichment requires OKFGEN_LLM_API_KEY or OPENAI_API_KEY.");
     }
     if (options.mode === "explore") {
         return enrichRepoExplore(repo, options, progress);
@@ -675,8 +675,8 @@ function normalizeBinTarget(packagePath, target) {
     const prefix = packagePath === "." ? "" : `${packagePath}/`;
     return path.posix.normalize(`${prefix}${target}`).replace(/^\.\//, "");
 }
-function numberFromEnv(name, fallback) {
-    const value = process.env[name];
+function numberFromEnv(primary, legacy, fallback) {
+    const value = envValue(primary, legacy);
     if (!value) {
         return fallback;
     }
@@ -684,12 +684,15 @@ function numberFromEnv(name, fallback) {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 function llmModeFromEnv() {
-    return process.env.REPO_OKF_MODE === "explore" ? "explore" : "quick";
+    return envValue("OKFGEN_MODE", "REPO_OKF_MODE") === "explore" ? "explore" : "quick";
 }
 function defaultMaxFiles(mode) {
     return mode === "explore" ? DEFAULT_MAX_FILES_EXPLORE : DEFAULT_MAX_FILES_QUICK;
 }
 function trimTrailingSlash(value) {
     return value.replace(/\/+$/, "");
+}
+function envValue(primary, legacy) {
+    return process.env[primary] ?? process.env[legacy];
 }
 //# sourceMappingURL=enrichment.js.map
