@@ -1,4 +1,4 @@
-# okfgen
+# OKF Generator
 
 `okfgen` generates an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle for a software repository.
 

@@ -1,15 +1,15 @@
 ---
-type: Repository
+type: CLI Tool
 title: okfgen
 description: Generate Open Knowledge Format bundles for software repositories.
 resource: git@github.com:tommypacker/okf-generator.git
-tags: [open-source, repository]
-timestamp: 2026-06-13T19:56:53.456Z
+tags: [open-source, repository, cli-tool]
+timestamp: 2026-06-13T20:40:58.107Z
 ---
 
 # Summary
 
-okfgen is a TypeScript CLI tool that generates Open Knowledge Format (OKF) bundles for software repositories. It scans repository files, package manifests, docs, CI workflows, and tests, then writes a structured OKF markdown bundle. The tool supports optional LLM enrichment for richer summaries and provides commands for diffing and validating generated bundles.
+okfgen is a TypeScript CLI that scans a software repository and generates an Open Knowledge Format (OKF) bundle, with optional LLM-based enrichment for richer summaries. It supports commands for init, generate, diff, explain, and validate. The tool detects packages, scripts, CI workflows, docs, configs, and tests, producing a structured markdown bundle describing the repository's architecture and interfaces.
 
 # Enrichment
 
@@ -22,31 +22,30 @@ okfgen is a TypeScript CLI tool that generates Open Knowledge Format (OKF) bundl
 
 # Purpose
 
-* Generate Open Knowledge Format documentation bundles for software repositories
-* Enable reproducible, deterministic repo documentation with optional LLM enrichment
-* Provide CLI commands for init, generate, diff, explain, and validate
+* Generate Open Knowledge Format bundles for software repositories
+* Provide CLI commands for init, generate, diff, explain, and validate OKF bundles
+* Optionally enrich generated output with LLM summaries using OpenAI-compatible APIs
 
 # Architecture Notes
 
-* Modular TypeScript source with separate modules for scanning, OKF generation, enrichment, diffing, and validation
-* CLI entrypoint src/cli.ts parses commands and orchestrates workflows
-* Scanner (src/scanner.ts) detects packages, languages, docs, configs, CI, and tests
-* OKF generator (src/okf.ts) produces markdown concepts for repository, architecture, packages, workflows, interfaces, and operations
-* LLM enrichment (src/enrichment.ts) collects evidence and calls OpenAI-compatible API for summaries
+* TypeScript CLI with ES modules, compiled via tsc, run via node
+* File scanning (scanner.ts), OKF generation (okf.ts), diffing (diff.ts), enrichment (enrichment.ts), config (config.ts), validation (validator.ts), and utilities (fs-utils.ts)
 
 # Important Files
 
 * `src/cli.ts`
 * `src/scanner.ts`
 * `src/okf.ts`
-* `src/enrichment.ts`
 * `src/diff.ts`
-* `src/validator.ts`
+* `src/enrichment.ts`
 * `src/config.ts`
+* `src/validator.ts`
 * `src/fs-utils.ts`
 * `src/types.ts`
+* `src/index.ts`
 * `package.json`
-* `README.md`
+* `tsconfig.json`
+* `.github/workflows/ci.yml`
 
 # Evidence
 
@@ -55,12 +54,14 @@ okfgen is a TypeScript CLI tool that generates Open Knowledge Format (OKF) bundl
 * `src/cli.ts`
 * `src/scanner.ts`
 * `src/okf.ts`
-* `src/enrichment.ts`
 * `src/diff.ts`
-* `src/validator.ts`
+* `src/enrichment.ts`
 * `src/config.ts`
+* `src/validator.ts`
 * `src/fs-utils.ts`
 * `src/types.ts`
+* `src/index.ts`
+* `.github/workflows/ci.yml`
 
 # Detected Metadata
 

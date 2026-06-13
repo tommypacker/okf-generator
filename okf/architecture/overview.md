@@ -4,16 +4,13 @@ title: Architecture Overview
 description: "Detected source areas, languages, and package structure."
 resource: .
 tags: [architecture]
-timestamp: 2026-06-13T19:56:53.456Z
+timestamp: 2026-06-13T20:40:58.107Z
 ---
 
 # LLM Architecture Notes
 
-* Modular TypeScript source with separate modules for scanning, OKF generation, enrichment, diffing, and validation
-* CLI entrypoint src/cli.ts parses commands and orchestrates workflows
-* Scanner (src/scanner.ts) detects packages, languages, docs, configs, CI, and tests
-* OKF generator (src/okf.ts) produces markdown concepts for repository, architecture, packages, workflows, interfaces, and operations
-* LLM enrichment (src/enrichment.ts) collects evidence and calls OpenAI-compatible API for summaries
+* TypeScript CLI with ES modules, compiled via tsc, run via node
+* File scanning (scanner.ts), OKF generation (okf.ts), diffing (diff.ts), enrichment (enrichment.ts), config (config.ts), validation (validator.ts), and utilities (fs-utils.ts)
 
 # Source Areas
 

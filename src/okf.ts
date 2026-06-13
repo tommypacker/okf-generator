@@ -10,6 +10,7 @@ export function generateOkfFiles(repo: RepoInfo, enrichment?: RepoEnrichment): O
   const workflowFiles = workflowConceptFiles(repo, enrichment);
   const operationFiles = operationConceptFiles(repo);
   const documentationFiles = documentationConceptFiles(repo, enrichment);
+  const rootConceptType = repositoryConceptType(repo);
 
   files.push(file("index.md", rootIndex(repo, {
     hasPackages: packageFiles.length > 0,
@@ -19,11 +20,11 @@ export function generateOkfFiles(repo: RepoInfo, enrichment?: RepoEnrichment): O
     hasOperations: operationFiles.length > 0,
   })));
   files.push(file("repository.md", concept({
-    type: "Repository",
+    type: rootConceptType,
     title: repo.name,
     description: repo.description ?? `Open source repository at ${repo.name}.`,
     resource: repo.remoteUrl ?? repo.root,
-    tags: ["open-source", "repository"],
+    tags: uniqueTags(["open-source", "repository", slugify(rootConceptType)]),
     timestamp: repo.scannedAt,
     body: repositoryBody(repo, enrichment),
   })));
@@ -300,7 +301,7 @@ interface RootIndexOptions {
 
 function rootIndex(repo: RepoInfo, options: RootIndexOptions): string {
   const entries: [string, string, string][] = [
-    ["Repository", "repository.md", repo.description ?? "Top-level repository concept."],
+    ["Project", "repository.md", repo.description ?? "Top-level project concept."],
     ["Architecture", "architecture/overview.md", "High-level source structure and detected languages."],
   ];
   if (options.hasPackages) {
@@ -319,6 +320,64 @@ function rootIndex(repo: RepoInfo, options: RootIndexOptions): string {
     entries.push(["Operations", "operations/", "Detected operational inventories."]);
   }
   return sectionIndex(repo.name, entries);
+}
+
+function repositoryConceptType(repo: RepoInfo): string {
+  if (repo.bins.length) {
+    return "CLI Tool";
+  }
+
+  if (repo.packages.length > 1 || repo.sourceDirectories.some((dir) => ["apps", "packages", "crates"].includes(dir.path))) {
+    return "Software Workspace";
+  }
+
+  if (hasAnyDependency(repo, [
+    "@astrojs",
+    "@remix-run",
+    "@sveltejs",
+    "astro",
+    "next",
+    "nuxt",
+    "react",
+    "solid-js",
+    "svelte",
+    "vite",
+    "vue",
+  ])) {
+    return "Web Application";
+  }
+
+  if (
+    repo.configs.some((config) => ["Dockerfile", "docker-compose.yml", "compose.yml"].includes(config.path)) ||
+    repo.packages.some((pkg) => pkg.entrypoints.some((entrypoint) => /(^|\/)(server|api|routes?)\.[cm]?[jt]s$/.test(entrypoint.path))) ||
+    hasAnyDependency(repo, ["@fastify", "@nestjs", "express", "fastify", "hono", "koa"])
+  ) {
+    return "Backend Service";
+  }
+
+  if (repo.packages.some((pkg) => pkg.manifestType === "package.json" && pkg.path === ".")) {
+    return "Software Library";
+  }
+
+  if (repo.languages.length) {
+    return "Software Project";
+  }
+
+  if (repo.docs.length) {
+    return "Documentation Collection";
+  }
+
+  return "Project";
+}
+
+function hasAnyDependency(repo: RepoInfo, dependencyNames: string[]): boolean {
+  const candidates = new Set(dependencyNames);
+  return repo.packages.some((pkg) =>
+    pkg.dependencyNames.some((dependency) =>
+      candidates.has(dependency) ||
+      dependencyNames.some((candidate) => candidate.startsWith("@") && dependency.startsWith(`${candidate}/`)),
+    ),
+  );
 }
 
 function sectionIndex(title: string, entries: [string, string, string][]): string {
