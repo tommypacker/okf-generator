@@ -1,10 +1,10 @@
 ---
-type: CLI Interface
+type: Interface
 title: Command Line Interfaces
 description: CLI entrypoints declared by repository package manifests.
 resource: .
 tags: [cli, interface]
-timestamp: 2026-06-13T19:10:57.764Z
+timestamp: 2026-06-13T19:14:24.524Z
 ---
 
 # Declared Commands

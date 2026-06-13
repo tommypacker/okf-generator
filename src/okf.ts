@@ -8,7 +8,7 @@ export function generateOkfFiles(repo: RepoInfo, enrichment?: RepoEnrichment): O
 
   files.push(file("index.md", rootIndex(repo)));
   files.push(file("repository.md", concept({
-    type: "Open Source Repository",
+    type: "Repository",
     title: repo.name,
     description: repo.description ?? `Open source repository at ${repo.name}.`,
     resource: repo.remoteUrl ?? repo.root,
@@ -21,7 +21,7 @@ export function generateOkfFiles(repo: RepoInfo, enrichment?: RepoEnrichment): O
     ["Overview", "overview.md", "High-level repository structure and detected source areas."],
   ])));
   files.push(file("architecture/overview.md", concept({
-    type: "Architecture Overview",
+    type: "Architecture",
     title: "Architecture Overview",
     description: "Detected source areas, languages, and package structure.",
     resource: ".",
@@ -38,7 +38,7 @@ export function generateOkfFiles(repo: RepoInfo, enrichment?: RepoEnrichment): O
   files.push(file("interfaces/index.md", interfacesIndex(repo)));
   if (repo.bins.length > 0) {
     files.push(file("interfaces/cli.md", concept({
-      type: "CLI Interface",
+      type: "Interface",
       title: "Command Line Interfaces",
       description: "CLI entrypoints declared by repository package manifests.",
       resource: ".",
@@ -81,11 +81,10 @@ function workflowConceptFiles(repo: RepoInfo, enrichment?: RepoEnrichment): Arra
 
   entries.push({
     entry: ["Local Development", "local-development.md", "Detected local development scripts and package manager hints."],
-    file: file("workflows/local-development.md", workflowConcept(
-      repo,
-      "Development Workflow",
-      "Local Development",
-      "Detected local development scripts and package manager hints.",
+      file: file("workflows/local-development.md", workflowConcept(
+        repo,
+        "Local Development",
+        "Detected local development scripts and package manager hints.",
       developmentScripts,
       ["development"],
       enrichment?.workflows?.development,
@@ -97,7 +96,6 @@ function workflowConceptFiles(repo: RepoInfo, enrichment?: RepoEnrichment): Arra
       entry: ["Testing", "testing.md", "Detected test scripts and test files."],
       file: file("workflows/testing.md", workflowConcept(
         repo,
-        "Test Workflow",
         "Testing",
         "Detected test scripts and test files.",
         testScripts,
@@ -113,7 +111,6 @@ function workflowConceptFiles(repo: RepoInfo, enrichment?: RepoEnrichment): Arra
       entry: ["Release", "release.md", "Detected release and publishing hints."],
       file: file("workflows/release.md", workflowConcept(
         repo,
-        "Release Workflow",
         "Release",
         "Detected release and publishing scripts, changelog, and CI hints.",
         releaseScripts,
@@ -139,7 +136,6 @@ function operationConceptFiles(repo: RepoInfo): Array<{
       file: file("operations/configuration.md", listConcept(
         repo,
         "Configuration Inventory",
-        "Configuration Inventory",
         "Detected repository configuration files.",
         ["configuration"],
         repo.configs,
@@ -152,7 +148,6 @@ function operationConceptFiles(repo: RepoInfo): Array<{
       entry: ["CI Workflows", "ci.md", "Detected continuous integration workflow files."],
       file: file("operations/ci.md", listConcept(
         repo,
-        "CI Workflow",
         "CI Workflows",
         "Detected continuous integration workflow files.",
         ["ci", "automation"],
@@ -166,7 +161,6 @@ function operationConceptFiles(repo: RepoInfo): Array<{
       entry: ["Test Suite", "test-suite.md", "Detected test files and test commands."],
       file: file("operations/test-suite.md", listConcept(
         repo,
-        "Test Suite",
         "Test Suite",
         "Detected test files in the repository.",
         ["testing"],
@@ -398,7 +392,6 @@ function workflowsIndex(workflows: Array<{ entry: [string, string, string] }>): 
 
 function workflowConcept(
   repo: RepoInfo,
-  type: string,
   title: string,
   description: string,
   scripts: ScriptInfo[],
@@ -415,7 +408,7 @@ function workflowConcept(
     : "No matching package scripts were detected.";
 
   return concept({
-    type,
+    type: "Workflow",
     title,
     description,
     resource: ".",
@@ -467,7 +460,6 @@ function docsIndex(repo: RepoInfo): string {
 function docsConcept(repo: RepoInfo, enrichment?: RepoEnrichment): string {
   return listConcept(
     repo,
-    "Documentation Set",
     "Documentation Inventory",
     "Detected repository documentation files.",
     ["documentation"],
@@ -478,7 +470,6 @@ function docsConcept(repo: RepoInfo, enrichment?: RepoEnrichment): string {
 
 function listConcept(
   repo: RepoInfo,
-  type: string,
   title: string,
   description: string,
   tags: string[],
@@ -486,7 +477,7 @@ function listConcept(
   enrichmentSection?: RepoEnrichment["documentation"],
 ): string {
   return concept({
-    type,
+    type: "Inventory",
     title,
     description,
     resource: ".",

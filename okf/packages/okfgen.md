@@ -4,7 +4,7 @@ title: okfgen
 description: Generate Open Knowledge Format bundles for software repositories.
 resource: .
 tags: [package]
-timestamp: 2026-06-13T19:10:57.764Z
+timestamp: 2026-06-13T19:14:24.524Z
 ---
 
 # Summary

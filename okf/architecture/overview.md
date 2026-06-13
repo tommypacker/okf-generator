@@ -1,10 +1,10 @@
 ---
-type: Architecture Overview
+type: Architecture
 title: Architecture Overview
 description: "Detected source areas, languages, and package structure."
 resource: .
 tags: [architecture]
-timestamp: 2026-06-13T19:10:57.764Z
+timestamp: 2026-06-13T19:14:24.524Z
 ---
 
 # LLM Architecture Notes

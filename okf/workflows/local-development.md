@@ -1,10 +1,10 @@
 ---
-type: Development Workflow
+type: Workflow
 title: Local Development
 description: Detected local development scripts and package manager hints.
 resource: .
 tags: [development]
-timestamp: 2026-06-13T19:10:57.764Z
+timestamp: 2026-06-13T19:14:24.524Z
 ---
 
 # LLM Summary

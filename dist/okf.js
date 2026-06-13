@@ -4,7 +4,7 @@ export function generateOkfFiles(repo, enrichment) {
     const files = [];
     files.push(file("index.md", rootIndex(repo)));
     files.push(file("repository.md", concept({
-        type: "Open Source Repository",
+        type: "Repository",
         title: repo.name,
         description: repo.description ?? `Open source repository at ${repo.name}.`,
         resource: repo.remoteUrl ?? repo.root,
@@ -16,7 +16,7 @@ export function generateOkfFiles(repo, enrichment) {
         ["Overview", "overview.md", "High-level repository structure and detected source areas."],
     ])));
     files.push(file("architecture/overview.md", concept({
-        type: "Architecture Overview",
+        type: "Architecture",
         title: "Architecture Overview",
         description: "Detected source areas, languages, and package structure.",
         resource: ".",
@@ -31,7 +31,7 @@ export function generateOkfFiles(repo, enrichment) {
     files.push(file("interfaces/index.md", interfacesIndex(repo)));
     if (repo.bins.length > 0) {
         files.push(file("interfaces/cli.md", concept({
-            type: "CLI Interface",
+            type: "Interface",
             title: "Command Line Interfaces",
             description: "CLI entrypoints declared by repository package manifests.",
             resource: ".",
@@ -64,18 +64,18 @@ function workflowConceptFiles(repo, enrichment) {
     const entries = [];
     entries.push({
         entry: ["Local Development", "local-development.md", "Detected local development scripts and package manager hints."],
-        file: file("workflows/local-development.md", workflowConcept(repo, "Development Workflow", "Local Development", "Detected local development scripts and package manager hints.", developmentScripts, ["development"], enrichment?.workflows?.development)),
+        file: file("workflows/local-development.md", workflowConcept(repo, "Local Development", "Detected local development scripts and package manager hints.", developmentScripts, ["development"], enrichment?.workflows?.development)),
     });
     if (testScripts.length || repo.tests.length) {
         entries.push({
             entry: ["Testing", "testing.md", "Detected test scripts and test files."],
-            file: file("workflows/testing.md", workflowConcept(repo, "Test Workflow", "Testing", "Detected test scripts and test files.", testScripts, ["testing"], enrichment?.workflows?.testing, testsBody(repo))),
+            file: file("workflows/testing.md", workflowConcept(repo, "Testing", "Detected test scripts and test files.", testScripts, ["testing"], enrichment?.workflows?.testing, testsBody(repo))),
         });
     }
     if (releaseScripts.length || repo.hasChangelog || repo.ci.length || hasEnrichedSection(enrichment?.workflows?.release)) {
         entries.push({
             entry: ["Release", "release.md", "Detected release and publishing hints."],
-            file: file("workflows/release.md", workflowConcept(repo, "Release Workflow", "Release", "Detected release and publishing scripts, changelog, and CI hints.", releaseScripts, ["release"], enrichment?.workflows?.release, releaseBody(repo))),
+            file: file("workflows/release.md", workflowConcept(repo, "Release", "Detected release and publishing scripts, changelog, and CI hints.", releaseScripts, ["release"], enrichment?.workflows?.release, releaseBody(repo))),
         });
     }
     return entries;
@@ -85,19 +85,19 @@ function operationConceptFiles(repo) {
     if (repo.configs.length) {
         entries.push({
             entry: ["Configuration", "configuration.md", "Detected configuration files."],
-            file: file("operations/configuration.md", listConcept(repo, "Configuration Inventory", "Configuration Inventory", "Detected repository configuration files.", ["configuration"], repo.configs)),
+            file: file("operations/configuration.md", listConcept(repo, "Configuration Inventory", "Detected repository configuration files.", ["configuration"], repo.configs)),
         });
     }
     if (repo.ci.length) {
         entries.push({
             entry: ["CI Workflows", "ci.md", "Detected continuous integration workflow files."],
-            file: file("operations/ci.md", listConcept(repo, "CI Workflow", "CI Workflows", "Detected continuous integration workflow files.", ["ci", "automation"], repo.ci)),
+            file: file("operations/ci.md", listConcept(repo, "CI Workflows", "Detected continuous integration workflow files.", ["ci", "automation"], repo.ci)),
         });
     }
     if (repo.tests.length) {
         entries.push({
             entry: ["Test Suite", "test-suite.md", "Detected test files and test commands."],
-            file: file("operations/test-suite.md", listConcept(repo, "Test Suite", "Test Suite", "Detected test files in the repository.", ["testing"], repo.tests)),
+            file: file("operations/test-suite.md", listConcept(repo, "Test Suite", "Detected test files in the repository.", ["testing"], repo.tests)),
         });
     }
     return entries;
@@ -267,7 +267,7 @@ function cliBody(repo) {
 function workflowsIndex(workflows) {
     return sectionIndex("Workflows", workflows.map((workflow) => workflow.entry));
 }
-function workflowConcept(repo, type, title, description, scripts, tags, enrichmentSection, extraBody) {
+function workflowConcept(repo, title, description, scripts, tags, enrichmentSection, extraBody) {
     const scriptTable = scripts.length
         ? table([["Script", "Command", "Package"], ...scripts.map((script) => [
                 code(script.name),
@@ -276,7 +276,7 @@ function workflowConcept(repo, type, title, description, scripts, tags, enrichme
             ])])
         : "No matching package scripts were detected.";
     return concept({
-        type,
+        type: "Workflow",
         title,
         description,
         resource: ".",
@@ -317,11 +317,11 @@ function docsIndex(repo) {
     ]);
 }
 function docsConcept(repo, enrichment) {
-    return listConcept(repo, "Documentation Set", "Documentation Inventory", "Detected repository documentation files.", ["documentation"], repo.docs, enrichment?.documentation);
+    return listConcept(repo, "Documentation Inventory", "Detected repository documentation files.", ["documentation"], repo.docs, enrichment?.documentation);
 }
-function listConcept(repo, type, title, description, tags, entries, enrichmentSection) {
+function listConcept(repo, title, description, tags, entries, enrichmentSection) {
     return concept({
-        type,
+        type: "Inventory",
         title,
         description,
         resource: ".",

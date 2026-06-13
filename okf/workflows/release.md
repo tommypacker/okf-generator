@@ -1,10 +1,10 @@
 ---
-type: Release Workflow
+type: Workflow
 title: Release
 description: "Detected release and publishing scripts, changelog, and CI hints."
 resource: .
 tags: [release]
-timestamp: 2026-06-13T19:10:57.764Z
+timestamp: 2026-06-13T19:14:24.524Z
 ---
 
 # LLM Summary

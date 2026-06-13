@@ -1,10 +1,10 @@
 ---
-type: Open Source Repository
+type: Repository
 title: okfgen
 description: Generate Open Knowledge Format bundles for software repositories.
 resource: git@github.com:tommypacker/okf-generator.git
 tags: [open-source, repository]
-timestamp: 2026-06-13T19:10:57.764Z
+timestamp: 2026-06-13T19:14:24.524Z
 ---
 
 # Summary
