@@ -1,7 +1,7 @@
 {
   "tool": "okfgen",
   "toolVersion": "0.1.0",
-  "generatedAt": "2026-06-13T19:39:57.551Z",
+  "generatedAt": "2026-06-13T19:53:05.066Z",
   "repository": {
     "name": "okfgen",
     "root": "/Users/tommy/Documents/opensource/okf",
@@ -23,20 +23,10 @@
     "languages": 2
   },
   "files": [
-    "architecture/index.md",
     "architecture/overview.md",
-    "docs/documentation.md",
-    "docs/index.md",
     "index.md",
-    "interfaces/cli.md",
-    "interfaces/index.md",
-    "log.md",
-    "operations/configuration.md",
-    "operations/index.md",
     "packages/index.md",
     "packages/okfgen.md",
-    "repository.md",
-    "workflows/index.md",
-    "workflows/local-development.md"
+    "repository.md"
   ]
 }

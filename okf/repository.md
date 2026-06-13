@@ -4,7 +4,7 @@ title: okfgen
 description: Generate Open Knowledge Format bundles for software repositories.
 resource: git@github.com:tommypacker/okf-generator.git
 tags: [open-source, repository]
-timestamp: 2026-06-13T19:39:57.551Z
+timestamp: 2026-06-13T19:53:05.066Z
 ---
 
 # Summary
@@ -26,7 +26,7 @@ The `okfgen` package generates Open Knowledge Format (OKF) bundles for software 
 
 # Architecture Notes
 
-* The package utilizes a CLI for user interaction and various modules for scanning, generating, and validating OKF bundles.
+* The package utilizes a CLI to interact with various modules for scanning, generating, and validating OKF bundles.
 
 # Important Files
 
@@ -35,8 +35,8 @@ The `okfgen` package generates Open Knowledge Format (OKF) bundles for software 
 * `src/diff.ts`
 * `src/enrichment.ts`
 * `src/okf.ts`
-* `src/validator.ts`
 * `src/config.ts`
+* `src/validator.ts`
 
 # Evidence
 
@@ -59,10 +59,3 @@ The `okfgen` package generates Open Knowledge Format (OKF) bundles for software 
 | --- | --- |
 | TypeScript | 10 |
 | Markdown | 1 |
-
-# Navigation
-
-* [Architecture overview](/architecture/overview.md)
-* [Packages](/packages/)
-* [Workflows](/workflows/)
-* [Documentation](/docs/documentation.md)

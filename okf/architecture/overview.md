@@ -4,12 +4,12 @@ title: Architecture Overview
 description: "Detected source areas, languages, and package structure."
 resource: .
 tags: [architecture]
-timestamp: 2026-06-13T19:39:57.551Z
+timestamp: 2026-06-13T19:53:05.066Z
 ---
 
 # LLM Architecture Notes
 
-* The package utilizes a CLI for user interaction and various modules for scanning, generating, and validating OKF bundles.
+* The package utilizes a CLI to interact with various modules for scanning, generating, and validating OKF bundles.
 
 # Source Areas
 

@@ -2,7 +2,18 @@ import { slugify } from "./fs-utils.js";
 import { displayPath, scriptCategory, titleForPackage } from "./scanner.js";
 export function generateOkfFiles(repo, enrichment) {
     const files = [];
-    files.push(file("index.md", rootIndex(repo)));
+    const packageFiles = repo.packages.map((pkg) => file(`packages/${packageSlug(pkg)}.md`, packageConcept(repo, pkg, enrichment)));
+    const interfaceFiles = interfaceConceptFiles(repo);
+    const workflowFiles = workflowConceptFiles(repo, enrichment);
+    const operationFiles = operationConceptFiles(repo);
+    const documentationFiles = documentationConceptFiles(repo, enrichment);
+    files.push(file("index.md", rootIndex(repo, {
+        hasPackages: packageFiles.length > 0,
+        hasInterfaces: interfaceFiles.length > 0,
+        hasWorkflows: workflowFiles.length > 0,
+        hasDocumentation: documentationFiles.length > 0,
+        hasOperations: operationFiles.length > 0,
+    })));
     files.push(file("repository.md", concept({
         type: "Repository",
         title: repo.name,
@@ -12,9 +23,6 @@ export function generateOkfFiles(repo, enrichment) {
         timestamp: repo.scannedAt,
         body: repositoryBody(repo, enrichment),
     })));
-    files.push(file("architecture/index.md", sectionIndex("Architecture", [
-        ["Overview", "overview.md", "High-level repository structure and detected source areas."],
-    ])));
     files.push(file("architecture/overview.md", concept({
         type: "Architecture",
         title: "Architecture Overview",
@@ -24,37 +32,34 @@ export function generateOkfFiles(repo, enrichment) {
         timestamp: repo.scannedAt,
         body: architectureBody(repo, enrichment),
     })));
-    files.push(file("packages/index.md", packagesIndex(repo)));
-    for (const pkg of repo.packages) {
-        files.push(file(`packages/${packageSlug(pkg)}.md`, packageConcept(repo, pkg, enrichment)));
+    if (packageFiles.length) {
+        files.push(file("packages/index.md", packagesIndex(repo)));
+        files.push(...packageFiles);
     }
-    files.push(file("interfaces/index.md", interfacesIndex(repo)));
-    if (repo.bins.length > 0) {
-        files.push(file("interfaces/cli.md", concept({
-            type: "Interface",
-            title: "Command Line Interfaces",
-            description: "CLI entrypoints declared by repository package manifests.",
-            resource: ".",
-            tags: ["cli", "interface"],
-            timestamp: repo.scannedAt,
-            body: cliBody(repo),
-        })));
+    if (interfaceFiles.length) {
+        files.push(file("interfaces/index.md", sectionIndex("Interfaces", interfaceFiles.map((item) => item.entry))));
+        for (const interfaceFile of interfaceFiles) {
+            files.push(interfaceFile.file);
+        }
     }
-    const workflowFiles = workflowConceptFiles(repo, enrichment);
-    files.push(file("workflows/index.md", workflowsIndex(workflowFiles)));
-    for (const workflowFile of workflowFiles) {
-        files.push(workflowFile.file);
+    if (workflowFiles.length) {
+        files.push(file("workflows/index.md", sectionIndex("Workflows", workflowFiles.map((item) => item.entry))));
+        for (const workflowFile of workflowFiles) {
+            files.push(workflowFile.file);
+        }
     }
-    const operationFiles = operationConceptFiles(repo);
     if (operationFiles.length) {
         files.push(file("operations/index.md", sectionIndex("Operations", operationFiles.map((item) => item.entry))));
         for (const operationFile of operationFiles) {
             files.push(operationFile.file);
         }
     }
-    files.push(file("docs/index.md", docsIndex(repo)));
-    files.push(file("docs/documentation.md", docsConcept(repo, enrichment)));
-    files.push(file("log.md", logFile(repo)));
+    if (documentationFiles.length) {
+        files.push(file("docs/index.md", sectionIndex("Documentation", documentationFiles.map((item) => item.entry))));
+        for (const documentationFile of documentationFiles) {
+            files.push(documentationFile.file);
+        }
+    }
     return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 function workflowConceptFiles(repo, enrichment) {
@@ -62,10 +67,12 @@ function workflowConceptFiles(repo, enrichment) {
     const testScripts = repo.scripts.filter((script) => scriptCategory(script) === "test");
     const releaseScripts = repo.scripts.filter((script) => scriptCategory(script) === "release");
     const entries = [];
-    entries.push({
-        entry: ["Local Development", "local-development.md", "Detected local development scripts and package manager hints."],
-        file: file("workflows/local-development.md", workflowConcept(repo, "Local Development", "Detected local development scripts and package manager hints.", developmentScripts, ["development"], enrichment?.workflows?.development)),
-    });
+    if (hasSubstantiveDevelopmentWorkflow(repo, developmentScripts)) {
+        entries.push({
+            entry: ["Local Development", "local-development.md", "Detected local development scripts and package manager hints."],
+            file: file("workflows/local-development.md", workflowConcept(repo, "Local Development", "Detected local development scripts and package manager hints.", developmentScripts, ["development"], enrichment?.workflows?.development)),
+        });
+    }
     if (testScripts.length || repo.tests.length) {
         entries.push({
             entry: ["Testing", "testing.md", "Detected test scripts and test files."],
@@ -80,12 +87,30 @@ function workflowConceptFiles(repo, enrichment) {
     }
     return entries;
 }
+function interfaceConceptFiles(repo) {
+    if (repo.bins.length <= 1) {
+        return [];
+    }
+    return [{
+            entry: ["Command Line Interfaces", "cli.md", "CLI entrypoints declared by package manifests."],
+            file: file("interfaces/cli.md", concept({
+                type: "Interface",
+                title: "Command Line Interfaces",
+                description: "CLI entrypoints declared by repository package manifests.",
+                resource: ".",
+                tags: ["cli", "interface"],
+                timestamp: repo.scannedAt,
+                body: cliBody(repo),
+            })),
+        }];
+}
 function operationConceptFiles(repo) {
     const entries = [];
-    if (repo.configs.length) {
+    const substantiveConfigs = repo.configs.filter((config) => isSubstantiveConfig(config.path));
+    if (substantiveConfigs.length) {
         entries.push({
             entry: ["Configuration", "configuration.md", "Detected configuration files."],
-            file: file("operations/configuration.md", listConcept(repo, "Configuration Inventory", "Detected repository configuration files.", ["configuration"], repo.configs)),
+            file: file("operations/configuration.md", listConcept(repo, "Configuration Inventory", "Detected repository configuration files.", ["configuration"], substantiveConfigs)),
         });
     }
     if (repo.ci.length) {
@@ -101,6 +126,39 @@ function operationConceptFiles(repo) {
         });
     }
     return entries;
+}
+function documentationConceptFiles(repo, enrichment) {
+    const substantiveDocs = repo.docs.filter((doc) => isSubstantiveDoc(doc.path));
+    if (!substantiveDocs.length) {
+        return [];
+    }
+    return [{
+            entry: ["Documentation Inventory", "documentation.md", `${substantiveDocs.length} documentation file${substantiveDocs.length === 1 ? "" : "s"} detected.`],
+            file: file("docs/documentation.md", listConcept(repo, "Documentation Inventory", "Detected repository documentation files.", ["documentation"], substantiveDocs, enrichment?.documentation)),
+        }];
+}
+function hasSubstantiveDevelopmentWorkflow(repo, developmentScripts) {
+    if (developmentScripts.length === 0) {
+        return false;
+    }
+    const packageCount = new Set(developmentScripts.map((script) => script.packagePath)).size;
+    if (packageCount > 1 || developmentScripts.length >= 3) {
+        return true;
+    }
+    return repo.packages.length > 1;
+}
+function isSubstantiveConfig(filePath) {
+    if (filePath === "package.json" ||
+        filePath === "pyproject.toml" ||
+        filePath === "Cargo.toml" ||
+        filePath === "go.mod" ||
+        /^tsconfig.*\.json$/.test(filePath)) {
+        return false;
+    }
+    return true;
+}
+function isSubstantiveDoc(filePath) {
+    return !/^README(\.|$)/i.test(filePath);
 }
 function concept(input) {
     const frontmatter = [
@@ -124,16 +182,24 @@ function yamlScalar(value) {
 function file(filePath, content) {
     return { path: filePath, content };
 }
-function rootIndex(repo) {
+function rootIndex(repo, options) {
     const entries = [
         ["Repository", "repository.md", repo.description ?? "Top-level repository concept."],
-        ["Architecture", "architecture/", "High-level source structure and detected languages."],
-        ["Packages", "packages/", "Detected package and manifest concepts."],
-        ["Interfaces", "interfaces/", "Detected command line and public interfaces."],
-        ["Workflows", "workflows/", "Detected repository workflows."],
-        ["Documentation", "docs/", "Detected project documentation."],
+        ["Architecture", "architecture/overview.md", "High-level source structure and detected languages."],
     ];
-    if (repo.configs.length || repo.ci.length || repo.tests.length) {
+    if (options.hasPackages) {
+        entries.push(["Packages", "packages/", "Detected package and manifest concepts."]);
+    }
+    if (options.hasInterfaces) {
+        entries.push(["Interfaces", "interfaces/", "Detected command line and public interfaces."]);
+    }
+    if (options.hasWorkflows) {
+        entries.push(["Workflows", "workflows/", "Detected repository workflows."]);
+    }
+    if (options.hasDocumentation) {
+        entries.push(["Documentation", "docs/", "Detected project documentation."]);
+    }
+    if (options.hasOperations) {
         entries.push(["Operations", "operations/", "Detected operational inventories."]);
     }
     return sectionIndex(repo.name, entries);
@@ -164,13 +230,6 @@ function repositoryBody(repo, enrichment) {
             ["Language", "Files"],
             ...repo.languages.map((lang) => [lang.language, String(lang.files)]),
         ]) : "No source languages were detected.",
-    ].join("\n"), [
-        "# Navigation",
-        "",
-        "* [Architecture overview](/architecture/overview.md)",
-        "* [Packages](/packages/)",
-        "* [Workflows](/workflows/)",
-        "* [Documentation](/docs/documentation.md)",
     ].join("\n"));
 }
 function architectureBody(repo, enrichment) {
@@ -239,13 +298,6 @@ function packageConcept(repo, pkg, enrichment) {
         ].join("\n")),
     });
 }
-function interfacesIndex(repo) {
-    const entries = [];
-    if (repo.bins.length > 0) {
-        entries.push(["Command Line Interfaces", "cli.md", "CLI entrypoints declared by package manifests."]);
-    }
-    return sectionIndex("Interfaces", entries.length ? entries : [["Repository", "../repository.md", "No explicit interfaces were detected."]]);
-}
 function cliBody(repo) {
     return [
         "# Declared Commands",
@@ -263,9 +315,6 @@ function cliBody(repo) {
         "",
         "Commands are detected from `bin` declarations in package manifests.",
     ].join("\n");
-}
-function workflowsIndex(workflows) {
-    return sectionIndex("Workflows", workflows.map((workflow) => workflow.entry));
 }
 function workflowConcept(repo, title, description, scripts, tags, enrichmentSection, extraBody) {
     const scriptTable = scripts.length
@@ -311,14 +360,6 @@ function releaseBody(repo) {
         hints.length ? hints.map((hint) => `* ${hint}`).join("\n") : "No release-specific files were detected.",
     ].join("\n");
 }
-function docsIndex(repo) {
-    return sectionIndex("Documentation", [
-        ["Documentation Inventory", "documentation.md", `${repo.docs.length} documentation files detected.`],
-    ]);
-}
-function docsConcept(repo, enrichment) {
-    return listConcept(repo, "Documentation Inventory", "Detected repository documentation files.", ["documentation"], repo.docs, enrichment?.documentation);
-}
 function listConcept(repo, title, description, tags, entries, enrichmentSection) {
     return concept({
         type: "Inventory",
@@ -333,16 +374,6 @@ function listConcept(repo, title, description, tags, entries, enrichmentSection)
             entries.length ? fileList(entries) : "No matching files were detected.",
         ].join("\n")),
     });
-}
-function logFile(repo) {
-    const date = repo.scannedAt.slice(0, 10);
-    return [
-        "# Directory Update Log",
-        "",
-        `## ${date}`,
-        `* **Generation**: Generated OKF bundle for [${repo.name}](/repository.md).`,
-        "",
-    ].join("\n");
 }
 function packageReadmeSection(pkg) {
     if (!pkg.readme) {
