@@ -2,6 +2,8 @@
 
 `okfgen` generates an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle for a software repository.
 
+It currently targets OKF v0.1.
+
 The first version is a local TypeScript CLI focused on open source repos. It scans common repository files, package manifests, docs, CI workflows, tests, configs, and package directories, then writes a reviewable OKF bundle.
 
 This repository includes its own generated OKF bundle in [`okf/`](okf/) so you can inspect the output shape before running the CLI.
